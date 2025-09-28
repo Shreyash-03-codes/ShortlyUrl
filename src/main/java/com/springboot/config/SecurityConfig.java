@@ -29,13 +29,18 @@ public class SecurityConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOrigins("http://localhost:4200", "https://shortlyurl-6uvv.onrender.com")
-                        .allowedMethods("GET","POST","PUT","DELETE","OPTIONS")
+                        .allowedOrigins(
+                                "http://localhost:4200",
+                                "https://shortlyurl-6uvv.onrender.com",
+                                "https://shreyash-03-codes.github.io"
+                        )
+                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowedHeaders("*")
                         .allowCredentials(true);
             }
         };
     }
+
 
 
     @Bean
