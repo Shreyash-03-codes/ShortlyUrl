@@ -17,8 +17,9 @@ public class ShortUrl {
 
     @Lob
     @Column(nullable = false, columnDefinition = "TEXT")
-    @Basic(fetch = FetchType.EAGER)
+    @Basic(fetch = FetchType.LAZY) // change from EAGER to LAZY
     private String longUrl;
+
 
 
     @ManyToOne

@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 
+import org.springframework.transaction.annotation.Transactional;
+
 @Service
 public class ShortUrlServiceImpl implements ShortUrlService {
 
@@ -38,58 +40,43 @@ public class ShortUrlServiceImpl implements ShortUrlService {
         return code.toString();
     }
 
+    @Transactional
     public UrlResponseDto getShortUrl(UrlRequestDto dto, User user){
-        try {
-            String code = generateUrl();
-            ShortUrl shortUrl = new ShortUrl("https://shortlyurl-6uvv.onrender.com"+code, dto.getLongUrl(), user);
-            urlRepository.save(shortUrl);
-            return new UrlResponseDto(shortUrl.getShortUrl());
-        } catch (Exception ex) {
-            throw new RuntimeException("Error while generating short URL: " + ex.getMessage());
-        }
+        String code = generateUrl();
+        ShortUrl shortUrl = new ShortUrl("https://shortlyurl-6uvv.onrender.com"+code, dto.getLongUrl(), user);
+        urlRepository.save(shortUrl);
+        return new UrlResponseDto(shortUrl.getShortUrl());
     }
 
+    @Transactional
     public LongUrl getLongUrl(String shortUrl) {
-        try {
-            Optional<ShortUrl> s = urlRepository.findByShortUrl(shortUrl);
-            if(s.isPresent()){
-                return new LongUrl(s.get().getLongUrl());
-            }
-            throw new RuntimeException("Short URL not found");
-        } catch (Exception ex) {
-            throw new RuntimeException("Error while fetching long URL: " + ex.getMessage());
-        }
+        ShortUrl s = urlRepository.findByShortUrl(shortUrl)
+                .orElseThrow(() -> new RuntimeException("Short URL not found"));
+        return new LongUrl(s.getLongUrl());
     }
 
+    @Transactional
     public LongUrl getLongUrl(String shortCode, User user) {
-        ShortUrl url = urlRepository.findByShortUrlAndUser(shortCode, user).get();
-        if (url == null) {
-            return null; // Not found for this user
-        }
+        ShortUrl url = urlRepository.findByShortUrlAndUser(shortCode, user)
+                .orElse(null);
+        if (url == null) return null;
         return new LongUrl(url.getLongUrl());
     }
 
-
+    @Transactional
     public List<AllUrls> getAllUrl(User user){
-        try {
-            return urlRepository.findAllByUser(user)
-                    .stream()
-                    .map(u -> new AllUrls(u.getShortUrl(), u.getLongUrl()))
-                    .toList();
-        } catch (Exception ex) {
-            throw new RuntimeException("Error while fetching all URLs: " + ex.getMessage());
-        }
+        return urlRepository.findAllByUser(user)
+                .stream()
+                .map(u -> new AllUrls(u.getShortUrl(), u.getLongUrl()))
+                .toList();
     }
 
+    @Transactional
     public boolean deleteUrl(String shortUrl, User user) {
-        ShortUrl url = urlRepository.findByShortUrlAndUser(shortUrl, user).get();
-
-        if (url == null) {
-            return false; // Not found or unauthorized
-        }
-
+        ShortUrl url = urlRepository.findByShortUrlAndUser(shortUrl, user)
+                .orElse(null);
+        if (url == null) return false;
         urlRepository.delete(url);
         return true;
     }
-
 }
