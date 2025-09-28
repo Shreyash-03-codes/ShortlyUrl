@@ -61,18 +61,14 @@ public class ShortUrlServiceImpl implements ShortUrlService {
         }
     }
 
-    @Override
-    public LongUrl getLongUrl(String shortUrl, User user) {
-        try {
-            Optional<ShortUrl> s = urlRepository.findByShortUrlAndUser(shortUrl, user);
-            if(s.isPresent()){
-                return new LongUrl(s.get().getLongUrl());
-            }
-            throw new RuntimeException("Short URL not found for this user");
-        } catch (Exception ex) {
-            throw new RuntimeException("Error while fetching long URL: " + ex.getMessage());
+    public LongUrl getLongUrl(String shortCode, User user) {
+        ShortUrl url = urlRepository.findByShortUrlAndUser(shortCode, user).get();
+        if (url == null) {
+            return null; // Not found for this user
         }
+        return new LongUrl(url.getLongUrl());
     }
+
 
     public List<AllUrls> getAllUrl(User user){
         try {
@@ -85,17 +81,15 @@ public class ShortUrlServiceImpl implements ShortUrlService {
         }
     }
 
-    public boolean deleteUrl(String shortUrl, User user){
-        try {
-            Optional<ShortUrl> url = this.urlRepository.findByShortUrlAndUser(shortUrl, user);
-            System.out.println(url);
-            if(url.isPresent() && url.get().getUser().getId() == user.getId()){
-                urlRepository.delete(url.get());
-                return true;
-            }
-            throw new RuntimeException("Short URL not found or not authorized to delete");
-        } catch (Exception ex) {
-            throw new RuntimeException("Error while deleting URL: " + ex.getMessage());
+    public boolean deleteUrl(String shortUrl, User user) {
+        ShortUrl url = urlRepository.findByShortUrlAndUser(shortUrl, user).get();
+
+        if (url == null) {
+            return false; // Not found or unauthorized
         }
+
+        urlRepository.delete(url);
+        return true;
     }
+
 }

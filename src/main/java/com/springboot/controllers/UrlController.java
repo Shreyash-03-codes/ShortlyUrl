@@ -45,12 +45,17 @@ public class UrlController {
     @PostMapping("/getlong")
     public ResponseEntity<?> getLongUrl(@AuthenticationPrincipal User user, @RequestBody Original original) {
         try {
-            System.out.println(original.getShortCode());
-            LongUrl url = shortUrlService.getLongUrl(original.getShortCode(), user);
-            if (url == null) {
-                return buildErrorResponse("URL not found", HttpStatus.NOT_FOUND);
+            // Fetch the Long URL DTO from the service
+            LongUrl longUrlDto = shortUrlService.getLongUrl(original.getShortCode(), user);
+
+            if (longUrlDto == null) {
+                // URL not found for this user
+                return buildErrorResponse("Short URL not found for this user", HttpStatus.NOT_FOUND);
             }
-            return ResponseEntity.status(HttpStatus.OK).body(url);
+
+            // URL found, return it
+            return ResponseEntity.status(HttpStatus.OK).body(longUrlDto);
+
         } catch (IllegalArgumentException ex) {
             return buildErrorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (Exception ex) {
@@ -58,11 +63,18 @@ public class UrlController {
         }
     }
 
+
+
     @PostMapping("/delete")
     public ResponseEntity<?> deleteUrl(@RequestBody ShortUrlDeleteRequest shortUrl, @AuthenticationPrincipal User user) {
         try {
-            System.out.println(shortUrl);
-            shortUrlService.deleteUrl(shortUrl.getShortUrl(), user);
+            boolean deleted = shortUrlService.deleteUrl(shortUrl.getShortUrl(), user);
+
+            if (!deleted) {
+                // URL not found or user not authorized
+                return buildErrorResponse("Short URL not found or not authorized to delete", HttpStatus.BAD_REQUEST);
+            }
+
             return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
         } catch (IllegalArgumentException ex) {
             return buildErrorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST);
@@ -70,6 +82,7 @@ public class UrlController {
             return buildErrorResponse("Something went wrong: " + ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
 
     @GetMapping("/all")
     public ResponseEntity<?> getAll(@AuthenticationPrincipal User user) {
