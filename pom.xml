@@ -44,16 +44,16 @@
 			<artifactId>spring-boot-starter-security</artifactId>
 		</dependency>
 
-<!--		<dependency>-->
-<!--			<groupId>org.postgresql</groupId>-->
-<!--			<artifactId>postgresql</artifactId>-->
-
-<!--		</dependency>-->
 		<dependency>
-			<groupId>com.mysql</groupId>
-			<artifactId>mysql-connector-j</artifactId>
-		 <!-- or latest stable -->
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+
 		</dependency>
+<!--		<dependency>-->
+<!--			<groupId>com.mysql</groupId>-->
+<!--			<artifactId>mysql-connector-j</artifactId>-->
+<!--		 &lt;!&ndash; or latest stable &ndash;&gt;-->
+<!--		</dependency>-->
 
 
 		<dependency>
