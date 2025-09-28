@@ -16,7 +16,8 @@ public class ShortUrl {
     private String shortUrl;
 
     @Lob
-    @Column(nullable = false, columnDefinition = "TEXT" )
+    @Basic(fetch = FetchType.EAGER)
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String longUrl;
 
     @ManyToOne
