@@ -41,7 +41,7 @@ public class ShortUrlServiceImpl implements ShortUrlService {
     public UrlResponseDto getShortUrl(UrlRequestDto dto, User user){
         try {
             String code = generateUrl();
-            ShortUrl shortUrl = new ShortUrl("http://localhost:8080/"+code, dto.getLongUrl(), user);
+            ShortUrl shortUrl = new ShortUrl("https://shortlyurl-6uvv.onrender.com"+code, dto.getLongUrl(), user);
             urlRepository.save(shortUrl);
             return new UrlResponseDto(shortUrl.getShortUrl());
         } catch (Exception ex) {

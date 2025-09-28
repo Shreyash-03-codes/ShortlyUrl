@@ -15,7 +15,7 @@ public class RedirectUrlServiceImpl implements RedirectUrlService {
     @Override
     public String getRedirectUrl(String shortCode) {
 
-        String s= urlRepository.findByShortUrl("http://localhost:8080/"+shortCode).get().getLongUrl();
+        String s= urlRepository.findByShortUrl("https://shortlyurl-6uvv.onrender.com"+shortCode).get().getLongUrl();
         return s;
     }
 }
