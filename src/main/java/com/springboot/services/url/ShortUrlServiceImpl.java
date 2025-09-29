@@ -43,14 +43,21 @@ public class ShortUrlServiceImpl implements ShortUrlService {
     public UrlResponseDto getShortUrl(UrlRequestDto dto, User user) {
         String code = generateUrl();
 
+        // Ensure long URL has protocol
+        String longUrl = dto.getLongUrl();
+        if (!longUrl.startsWith("http://") && !longUrl.startsWith("https://")) {
+            longUrl = "http://" + longUrl;  // default to http
+        }
+
         // Store only the short code in the DB
-        ShortUrl shortUrl = new ShortUrl(code, dto.getLongUrl(), user);
+        ShortUrl shortUrl = new ShortUrl(code, longUrl, user);
         urlRepository.save(shortUrl);
 
         // Prepend domain dynamically when returning to client
         String fullShortUrl = "https://shortlyurl-6uvv.onrender.com/" + code;
         return new UrlResponseDto(fullShortUrl);
     }
+
 
     @Transactional
     public LongUrl getLongUrl(String shortCode, User user) {

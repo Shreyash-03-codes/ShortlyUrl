@@ -15,23 +15,30 @@ public class RedirectController {
     private RedirectUrlService redirectUrlService;
 
     @GetMapping("/{shortCode}")
-    public void redirect(@PathVariable("shortCode") String shortCode, HttpServletResponse response) throws Exception {
+    public void redirect(@PathVariable("shortCode") String shortCode, HttpServletResponse response) {
         try {
-            // Fetch the long URL using only the short code
             String longUrl = redirectUrlService.getRedirectUrl(shortCode);
 
-            // If long URL is null or empty, return 404
             if (longUrl == null || longUrl.isEmpty()) {
-                response.sendError(HttpStatus.NOT_FOUND.value(), "URL not found");
+                response.sendError(HttpStatus.NOT_FOUND.value(), "Short URL not found");
                 return;
             }
 
-            // Redirect to the actual long URL
+            // Ensure protocol is present (optional safety)
+            if (!longUrl.startsWith("http://") && !longUrl.startsWith("https://")) {
+                longUrl = "http://" + longUrl;
+            }
+
             response.sendRedirect(longUrl);
 
-        } catch (Exception ex) {
-            // Handle unexpected errors
-            response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Something went wrong: " + ex.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
+            try {
+                response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Unexpected error occurred");
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
         }
     }
+
 }
