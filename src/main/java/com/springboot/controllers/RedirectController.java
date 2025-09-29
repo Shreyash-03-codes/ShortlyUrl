@@ -14,14 +14,24 @@ public class RedirectController {
     @Autowired
     private RedirectUrlService redirectUrlService;
 
-    @GetMapping("/{shortUrl}")
-    public void redirect(@PathVariable("shortUrl") String shortUrl, HttpServletResponse response) throws Exception{
-        String longUrl=redirectUrlService.getRedirectUrl(shortUrl);
+    @GetMapping("/{shortCode}")
+    public void redirect(@PathVariable("shortCode") String shortCode, HttpServletResponse response) throws Exception {
+        try {
+            // Fetch the long URL using only the short code
+            String longUrl = redirectUrlService.getRedirectUrl(shortCode);
 
-        if(longUrl.isEmpty()){
-            response.sendError(HttpStatus.NOT_FOUND.value(), "URL not found");
+            // If long URL is null or empty, return 404
+            if (longUrl == null || longUrl.isEmpty()) {
+                response.sendError(HttpStatus.NOT_FOUND.value(), "URL not found");
+                return;
+            }
+
+            // Redirect to the actual long URL
+            response.sendRedirect(longUrl);
+
+        } catch (Exception ex) {
+            // Handle unexpected errors
+            response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Something went wrong: " + ex.getMessage());
         }
-        System.out.println(longUrl);
-        response.sendRedirect(longUrl);
     }
 }

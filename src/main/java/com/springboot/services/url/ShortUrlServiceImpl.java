@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Random;
 
 import org.springframework.transaction.annotation.Transactional;
@@ -22,18 +21,18 @@ public class ShortUrlServiceImpl implements ShortUrlService {
     @Autowired
     private UrlRepository urlRepository;
 
-    private String generateUrl(){
+    private String generateUrl() {
         String chars = "ABCDEFGHIJKL12345MNOPQRSTUVWXYZabcdefghijkl06789mnopqrstuvwxyz";
         StringBuilder code = new StringBuilder();
         Random random = new Random();
 
-        for(int i=0; i<6; i++){
+        for (int i = 0; i < 6; i++) {
             code.append(chars.charAt(random.nextInt(chars.length())));
         }
 
-        while (urlRepository.findByShortUrl(code.toString()).isPresent()){
+        while (urlRepository.findByShortUrl(code.toString()).isPresent()) {
             code.setLength(0);
-            for(int i=0; i<6; i++){
+            for (int i = 0; i < 6; i++) {
                 code.append(chars.charAt(random.nextInt(chars.length())));
             }
         }
@@ -41,40 +40,43 @@ public class ShortUrlServiceImpl implements ShortUrlService {
     }
 
     @Transactional
-    public UrlResponseDto getShortUrl(UrlRequestDto dto, User user){
+    public UrlResponseDto getShortUrl(UrlRequestDto dto, User user) {
         String code = generateUrl();
-        ShortUrl shortUrl = new ShortUrl("https://shortlyurl-6uvv.onrender.com"+code, dto.getLongUrl(), user);
-        urlRepository.save(shortUrl);
-        return new UrlResponseDto(shortUrl.getShortUrl());
-    }
 
-    @Transactional
-    public LongUrl getLongUrl(String shortUrl) {
-        ShortUrl s = urlRepository.findByShortUrl(shortUrl)
-                .orElseThrow(() -> new RuntimeException("Short URL not found"));
-        return new LongUrl(s.getLongUrl());
+        // Store only the short code in the DB
+        ShortUrl shortUrl = new ShortUrl(code, dto.getLongUrl(), user);
+        urlRepository.save(shortUrl);
+
+        // Prepend domain dynamically when returning to client
+        String fullShortUrl = "https://shortlyurl-6uvv.onrender.com/" + code;
+        return new UrlResponseDto(fullShortUrl);
     }
 
     @Transactional
     public LongUrl getLongUrl(String shortCode, User user) {
-        ShortUrl url = urlRepository.findByShortUrlAndUser(shortCode, user)
-                .orElse(null);
+        ShortUrl url = urlRepository.findByShortUrlAndUser(shortCode, user).orElse(null);
         if (url == null) return null;
         return new LongUrl(url.getLongUrl());
     }
 
     @Transactional
-    public List<AllUrls> getAllUrl(User user){
+    public LongUrl getLongUrl(String shortCode) {
+        ShortUrl s = urlRepository.findByShortUrl(shortCode)
+                .orElseThrow(() -> new RuntimeException("Short URL not found"));
+        return new LongUrl(s.getLongUrl());
+    }
+
+    @Transactional
+    public List<AllUrls> getAllUrl(User user) {
         return urlRepository.findAllByUser(user)
                 .stream()
-                .map(u -> new AllUrls(u.getShortUrl(), u.getLongUrl()))
+                .map(u -> new AllUrls("https://shortlyurl-6uvv.onrender.com/" + u.getShortUrl(), u.getLongUrl()))
                 .toList();
     }
 
     @Transactional
-    public boolean deleteUrl(String shortUrl, User user) {
-        ShortUrl url = urlRepository.findByShortUrlAndUser(shortUrl, user)
-                .orElse(null);
+    public boolean deleteUrl(String shortCode, User user) {
+        ShortUrl url = urlRepository.findByShortUrlAndUser(shortCode, user).orElse(null);
         if (url == null) return false;
         urlRepository.delete(url);
         return true;
