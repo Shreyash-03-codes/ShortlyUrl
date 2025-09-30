@@ -43,17 +43,15 @@ public class UrlController {
     }
 
     @PostMapping("/getlong")
-    public ResponseEntity<?> getLongUrl(@AuthenticationPrincipal User user, @RequestBody Original original) {
+    public ResponseEntity<?> getLongUrl( @RequestBody Original original) {
         try {
-            // Fetch the Long URL DTO from the service
+            // Call the method WITH user parameter
             LongUrl longUrlDto = shortUrlService.getLongUrl(original.getShortCode());
 
             if (longUrlDto == null) {
-                // URL not found for this user
                 return buildErrorResponse("Short URL not found for this user", HttpStatus.NOT_FOUND);
             }
 
-            // URL found, return it
             return ResponseEntity.status(HttpStatus.OK).body(longUrlDto);
 
         } catch (IllegalArgumentException ex) {
@@ -63,15 +61,13 @@ public class UrlController {
         }
     }
 
-
-
     @PostMapping("/delete")
     public ResponseEntity<?> deleteUrl(@RequestBody ShortUrlDeleteRequest shortUrl, @AuthenticationPrincipal User user) {
         try {
+            // Pass the shortUrl string directly (service will extract code if needed)
             boolean deleted = shortUrlService.deleteUrl(shortUrl.getShortUrl(), user);
 
             if (!deleted) {
-                // URL not found or user not authorized
                 return buildErrorResponse("Short URL not found or not authorized to delete", HttpStatus.BAD_REQUEST);
             }
 
