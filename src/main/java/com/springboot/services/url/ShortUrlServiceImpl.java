@@ -59,11 +59,12 @@ public class ShortUrlServiceImpl implements ShortUrlService {
     }
 
 
+    // In ShortUrlServiceImpl - RENAME this method to avoid conflict
     @Transactional
-    public LongUrl getLongUrl(String shortCode, User user) {
-        ShortUrl url = urlRepository.findByShortUrlAndUser(shortCode, user).orElse(null);
-        if (url == null) return null;
-        return new LongUrl(url.getLongUrl());
+    public LongUrl getLongUrlPublic(String shortCode) { // Renamed from getLongUrl
+        ShortUrl s = urlRepository.findByShortUrl(shortCode)
+                .orElseThrow(() -> new RuntimeException("Short URL not found"));
+        return new LongUrl(s.getLongUrl());
     }
 
     @Transactional

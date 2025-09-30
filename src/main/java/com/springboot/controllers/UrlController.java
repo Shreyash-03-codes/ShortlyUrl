@@ -46,7 +46,7 @@ public class UrlController {
     public ResponseEntity<?> getLongUrl(@AuthenticationPrincipal User user, @RequestBody Original original) {
         try {
             // Fetch the Long URL DTO from the service
-            LongUrl longUrlDto = shortUrlService.getLongUrl(original.getShortCode(), user);
+            LongUrl longUrlDto = shortUrlService.getLongUrl(original.getShortCode());
 
             if (longUrlDto == null) {
                 // URL not found for this user
